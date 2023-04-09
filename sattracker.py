@@ -93,7 +93,6 @@ class Tracker():
         
         for i in range(num_points):
             self.groundstation.date = datetime.datetime.utcfromtimestamp(ephem._convert_to_seconds_and_microseconds(next_pass_data[0])[0] + i*time_step)
-            print(self.groundstation.date)
             self.satellite.compute(self.groundstation)
             azimuth.append(self.azimuth())
             elevation.append(self.elevation())
