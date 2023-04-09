@@ -19,6 +19,7 @@ class Tracker():
     def set_epoch(self, epoch=time.time()):
         ''' sets epoch when parameters are observed '''
 
+        self.epoch = epoch
         self.groundstation.date = datetime.datetime.utcfromtimestamp(epoch)
         self.satellite.compute(self.groundstation)
 
@@ -77,3 +78,28 @@ class Tracker():
         z = (-clat *        south) + ( slat * zenith) + sitez
 
         return x, y, z
+        
+    def next_pass_table(self, num_points = 10):
+        self.set_epoch()
+        next_pass_data = self.groundstation.next_pass(self.satellite)
+        
+        rise_timestamp = ephem._convert_to_seconds_and_microseconds(next_pass_data[0])[0]
+        set_timestamp = ephem._convert_to_seconds_and_microseconds(next_pass_data[4])[0]
+        duration = set_timestamp -rise_timestamp
+        time_step = int(duration/num_points)
+        
+        azimuth = []
+        elevation = []
+        
+        for i in range(num_points):
+            self.groundstation.date = datetime.datetime.utcfromtimestamp(ephem._convert_to_seconds_and_microseconds(next_pass_data[0])[0] + i*time_step)
+            print(self.groundstation.date)
+            self.satellite.compute(self.groundstation)
+            azimuth.append(self.azimuth())
+            elevation.append(self.elevation())
+
+        self.set_epoch()
+        self.satellite.compute(self.groundstation)
+
+        return azimuth, elevation
+		
